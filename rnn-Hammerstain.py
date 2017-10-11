@@ -3,8 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from logistic_map import LogisticMapGenerator, next_sample
 
-RATE = 2.5
-SEQUENCE_LENGTH = 5
+RATE = 3.7
+SEQUENCE_LENGTH = 10
 LEARNING_RATE = 1E-4
 BATCH_SIZE = 128
 ORDER = 4
@@ -17,7 +17,7 @@ a feed-forward network with a single hidden layer containing a finite number
 of neurons (i.e., a multilayer perceptron), can approximate continuous
 functions on compact subsets of R^n
 """
-# Assuming order APPROXIMATION_EXPONENT is enough parameters
+# Assuming order^APPROXIMATION_EXPONENT is enough parameters
 def approx_f_u(u, w1_approx, w2_approx, order):
 	x_p = []
 	for p in range(ORDER):#np.power(order, APPROXIMATION_EXPONENT)):
@@ -47,11 +47,11 @@ def main():
 		cells.append(u)
 		for idx, _ in enumerate(range(SEQUENCE_LENGTH - 1)):
 			if idx == 0:
-				# cell = f_u(u, w1, ORDER)
-				cell = approx_f_u(u, w1_approx, w2_approx, ORDER)
+				cell = f_u(u, w1, ORDER)
+				# cell = approx_f_u(u, w1_approx, w2_approx, ORDER)
 			else:
-				# cell = f_u(cell, w1, ORDER)
-				cell = approx_f_u(cell, w1_approx, w2_approx, ORDER)
+				cell = f_u(cell, w1, ORDER)
+				# cell = approx_f_u(cell, w1_approx, w2_approx, ORDER)
 			cells.append(cell)
 			scope.reuse_variables()
 
@@ -62,11 +62,11 @@ def main():
 	with tf.Session() as sess:
 		# TRAIN
 		sess.run(tf.global_variables_initializer())
-		for i in range(20000):
+		for i in range(100000):
 			_input, _sequence = generator.sample(BATCH_SIZE)
 			# _, loss_val, rate_val = sess.run([training_step, loss, rate], feed_dict={u: _input, y: _sequence})
 			_, loss_val = sess.run([training_step, loss], feed_dict={u: _input, y: _sequence})
-			if i % 200 == 0:
+			if i % 2000 == 0:
 				# print('loss: {} - rate: {}\n'.format(loss_val, rate_val))
 				print('loss: {}\n'.format(loss_val))
 
