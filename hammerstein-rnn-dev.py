@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 from logistic_map import LogisticMapGenerator, next_sample
 
 RATE = 3.7
-SEQUENCE_LENGTH = 10
-LEARNING_RATE = 1E-4
+SEQUENCE_LENGTH = 3
+LEARNING_RATE = 1E-2
 BATCH_SIZE = 128
 ORDER = 4
 APPROXIMATION_EXPONENT = 3
@@ -64,18 +64,29 @@ def main():
 		sess.run(tf.global_variables_initializer())
 		for i in range(100000):
 			_input, _sequence = generator.sample(BATCH_SIZE)
-			# _, loss_val, rate_val = sess.run([training_step, loss, rate], feed_dict={u: _input, y: _sequence})
 			_, loss_val = sess.run([training_step, loss], feed_dict={u: _input, y: _sequence})
 			if i % 2000 == 0:
-				# print('loss: {} - rate: {}\n'.format(loss_val, rate_val))
 				print('loss: {}\n'.format(loss_val))
+				print(w1.eval())
 
-		# TEST
+		# TEST FOR A LONGER SEQUENCE
 		value = 0.5
-		output_rnn = sess.run(cells, feed_dict={u: np.asarray([[value], [value]])})
-		output_lmap = next_sample(value, RATE, SEQUENCE_LENGTH)
+		total_output_rnn = []
+		for i in range(3):
+			if i == 0:
+				output_rnn = sess.run(cells, feed_dict={u: np.asarray([[value], [value]])})
+				output_rnn = np.squeeze(output_rnn[0,:])
+				last_output = output_rnn[-1]
+			else:
+				output_rnn = sess.run(cells, feed_dict={u: np.asarray([[last_output], [last_output]])})
+				output_rnn = np.squeeze(output_rnn[0,:])
+				last_output = output_rnn[-1]
+			total_output_rnn.extend(list(output_rnn))
+		print(total_output_rnn)
 
-		plt.plot(np.squeeze(output_rnn[0,:]))
+		output_lmap = next_sample(value, RATE, SEQUENCE_LENGTH * 3)
+
+		plt.plot(np.squeeze(np.asarray(total_output_rnn)))
 		plt.plot(np.squeeze(output_lmap))
 		plt.legend(['rnn output', 'logistic map output'], loc='lower right')
 		# print('Estimanted rate: {} - Real rate: {}'.format(rate.eval(), RATE))
